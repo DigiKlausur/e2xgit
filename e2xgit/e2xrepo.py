@@ -66,7 +66,13 @@ class E2xRepo:
             os.path.join(self.repo.working_tree_dir, ".gitignore"),
         )
         self.repo.git.add([".gitignore"])
-        self.repo.git.commit(['-m "Add .gitignore"', ".gitignore"])
+        self.repo.git.commit(
+            [
+                '-m "Add .gitignore"',
+                f"--author='{self.author.name} <{self.author.email}>'",
+                ".gitignore",
+            ]
+        )
 
     def is_untracked(self, file: str) -> bool:
         """Is the file untracked?
