@@ -1,11 +1,3 @@
-# Course structure
-*
-!.gitignore
-!*/
-!templates/*
-!pools/*
-!source/*
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
