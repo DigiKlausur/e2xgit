@@ -86,7 +86,7 @@ class E2xRepo:
         Args:
             file (str): The path to the file
         """
-        if self.is_untracked():
+        if self.is_untracked(file):
             self.repo.git.add([self.get_path(file)])
 
     def commit(self, file: str, message: str = None, add_if_untracked=False) -> None:
