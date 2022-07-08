@@ -126,13 +126,14 @@ class E2xRepo:
             else:
                 self.add(file)
 
-        self.repo.git.commit(
-            [
-                f"-m '{message}'",
-                f"--author='{self.author.name} <{self.author.email}>'",
-                path,
-            ]
-        )
+        if path in self.status()["modified"]:
+            self.repo.git.commit(
+                [
+                    f"-m '{message}'",
+                    f"--author='{self.author.name} <{self.author.email}>'",
+                    path,
+                ]
+            )
 
     def get_unstaged(self) -> List[str]:
         """Get the unstaged files
