@@ -18,10 +18,9 @@ def post_save_commit_hook(
     """
     try:
         repo = E2xRepo(os.path.dirname(os_path))
+        repo.commit(os_path, add_if_untracked=True)
     except InvalidGitRepositoryError:
         contents_manager.log.info("[E2X Git] No repository found!")
-
-    repo.commit(os_path, add_if_untracked=True)
 
 
 def configure_post_save_hook(config: Config) -> None:
