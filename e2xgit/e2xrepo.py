@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List
+from typing import Dict, List
 
 from git import GitCommandError, InvalidGitRepositoryError, Repo
 
@@ -44,20 +44,20 @@ class E2xRepo:
             path = os.path.join(self.path, path)
         return os.path.relpath(path, start=self.repo.working_tree_dir)
 
-    def status(self) -> str:
-        added = self.repo.untracked_files
-        modified = []
-        deleted = []
+    def status(self) -> Dict[str, List[str]]:
+        """Get the status of a repository
 
-        for f in self.get_unstaged():
-            if f in added:
-                continue
-            if os.path.exists(os.path.join(self.repo.working_tree_dir, f)):
-                modified.append(f)
-            else:
-                deleted.append(f)
+        Args:
+            repo (Repo): The repository instance
 
-        return dict(new_files=added, modified=modified, deleted=deleted)
+        Returns:
+            Dict[str, List[str]]: A dictionary containing list of files
+        """
+        return dict(
+            untracked=self.repo.untracked_files,
+            staged=[item.a_path for item in self.repo.index.diff("HEAD")],
+            unstaged=[item.a_path for item in self.repo.index.diff(None)],
+        )
 
     def create_gitignore(self):
         here = os.path.dirname(__file__)
@@ -84,7 +84,7 @@ class E2xRepo:
             bool: True if untracked
         """
         path = self.get_path(file)
-        return path in self.status()["new_files"]
+        return path in self.status()["untracked"]
 
     def add(self, file: str) -> None:
         """Add a file to the repository
@@ -110,14 +110,14 @@ class E2xRepo:
         status = self.status()
         if message is None:
             status = self.status()
-            if path in status["new_files"]:
+            if path in status["untracked"]:
                 message = f"Add {path}"
-            elif path in status["modified"]:
+            elif path in status["staged"]:
                 message = f"Update {path}"
-            elif path in status["deleted"]:
+            elif path in status["unstaged"]:
                 message = f"Delete {path}"
 
-        if path in status["new_files"]:
+        if path in status["untracked"]:
             if not add_if_untracked:
                 raise GitCommandError(
                     command="git commit",
@@ -126,14 +126,13 @@ class E2xRepo:
             else:
                 self.add(file)
 
-        if path in self.status()["modified"]:
-            self.repo.git.commit(
-                [
-                    f"-m '{message}'",
-                    f"--author='{self.author.name} <{self.author.email}>'",
-                    path,
-                ]
-            )
+        self.repo.git.commit(
+            [
+                f"-m '{message}'",
+                f"--author='{self.author.name} <{self.author.email}>'",
+                path,
+            ]
+        )
 
     def get_unstaged(self) -> List[str]:
         """Get the unstaged files
