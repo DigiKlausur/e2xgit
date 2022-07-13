@@ -13,10 +13,12 @@ class E2xRepo:
 
         Args:
             path (str): Current working directory
-            create_if_not_exists (bool, optional): If the current path is not a git repository initialize one. Defaults to False.
+            create_if_not_exists (bool, optional): If the current path is not a git
+            repository initialize one. Defaults to False.
 
         Raises:
-            InvalidGitRepositoryError: If the path is not part of a git repositry and create_if_not_exists is set to False
+            InvalidGitRepositoryError: If the path is not part of a git repositry
+            and create_if_not_exists is set to False
         """
         assert os.path.isdir(path), f"Path: {path} does not exist"
         self.path = path
@@ -101,10 +103,12 @@ class E2xRepo:
         Args:
             file (str): Path to the file
             message (str, optional): The commit message to use. Defaults to None.
-            add_if_untracked (bool, optional): Add the file if it is untracked. Defaults to False.
+            add_if_untracked (bool, optional): Add the file if it is untracked.
+                                               Defaults to False.
 
         Raises:
-            GitCommandError: If the file is untracked and add_if_untracked is set to False
+            GitCommandError: If the file is untracked and add_if_untracked
+            is set to False
         """
         path = self.get_path(file)
         status = self.status()
