@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from notebook.services.contents.manager import ContentsManager
 from traitlets.config import Config
@@ -10,7 +10,9 @@ from .utils import get_status
 
 
 def post_file_op_commit_hook(
-    contents_manager: ContentsManager, action: FileOperations, options: Dict[str, Any]
+    contents_manager: ContentsManager,
+    action: Literal[FileOperations.DELETE, FileOperations.RENAME, FileOperations.SAVE],
+    options: Dict[str, Any],
 ) -> None:
     """Hook that is called when a file operation was performed
 
