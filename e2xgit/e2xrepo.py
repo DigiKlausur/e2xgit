@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import Dict, List
 
-from git import GitCommandError, InvalidGitRepositoryError, Repo
+from git import BadName, GitCommandError, InvalidGitRepositoryError, Repo
 
 from .utils import get_author
 
@@ -55,9 +55,14 @@ class E2xRepo:
         Returns:
             Dict[str, List[str]]: A dictionary containing list of files
         """
+        try:
+            staged = [item.a_path for item in self.repo.index.diff("HEAD")]
+        except BadName:
+            staged = []
+
         return dict(
             untracked=self.repo.untracked_files,
-            staged=[item.a_path for item in self.repo.index.diff("HEAD")],
+            staged=staged,
             unstaged=[item.a_path for item in self.repo.index.diff(None)],
         )
 
