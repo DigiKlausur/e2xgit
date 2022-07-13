@@ -1,0 +1,4 @@
+[flake8]
+
+# Ignore line length warnings
+ignore = E501
