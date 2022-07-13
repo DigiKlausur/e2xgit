@@ -1,7 +1,7 @@
 import importlib
 import os
 from enum import Enum
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal
 
 import traitlets
 from notebook.services.contents.filemanager import FileContentsManager
@@ -23,7 +23,7 @@ class E2xFileContentsManager(FileContentsManager):
         allow_none=True,
         help="""Python callable or importstring thereof
         to be called on the path of a file just changed.
-        This hook is called on renaming, removing, creating and saving files 
+        This hook is called on renaming, removing, creating and saving files
         """,
     )
 
