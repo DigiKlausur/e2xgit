@@ -5,30 +5,20 @@ from notebook.services.contents.manager import ContentsManager
 from traitlets.config import Config
 
 from .e2xrepo import E2xRepo, InvalidGitRepositoryError
-from .filemanager import FileOperations
+from .filemanager import E2xFileContentsManager, FileOperations
 from .utils import get_status
-
-
-def post_save_commit_hook(
-    model: dict, os_path: str, contents_manager: ContentsManager, **kwargs
-) -> None:
-    """Commit files on save
-
-    Args:
-        model (dict): The file model
-        os_path (str): The absolute path to the file
-        contents_manager (ContentsManager): The instance of the ContentsManager class
-    """
-    try:
-        repo = E2xRepo(os.path.dirname(os_path))
-        repo.commit(os_path, add_if_untracked=True)
-    except InvalidGitRepositoryError:
-        contents_manager.log.info("[E2X Git] No repository found!")
 
 
 def post_file_op_commit_hook(
     contents_manager: ContentsManager, action: FileOperations, options: Dict[str, Any]
-):
+) -> None:
+    """Hook that is called when a file operation was performed
+
+    Args:
+        contents_manager (ContentsManager): The contents manager instance
+        action (FileOperations): The file operation
+        options (Dict[str, Any]): A dictionary containing information about the file operation
+    """
     repo = None
     contents_manager.log.info(contents_manager.root_dir)
     try:
@@ -54,10 +44,12 @@ def post_file_op_commit_hook(
         repo.commit(options["path"])
 
 
-def configure_post_save_hook(config: Config) -> None:
-    """Given a Jupyter notebook config add the post_save_commit_hook
+def configure_e2xgit(config: Config) -> None:
+    """Configure Jupyter notebook to use the E2xFileContentsManager
+    and commit after every file operation
 
     Args:
-        config (Config): The Jupyter notebook config
+        config (Config): The Jupyter notebook configuration object
     """
-    config.FileContentsManager.post_save_hook = post_save_commit_hook
+    E2xFileContentsManager.post_file_op_hook = post_file_op_commit_hook
+    config.NotebookApp.contents_manager_class = E2xFileContentsManager
