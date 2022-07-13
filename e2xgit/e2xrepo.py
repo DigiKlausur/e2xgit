@@ -21,6 +21,7 @@ class E2xRepo:
             and create_if_not_exists is set to False
         """
         assert os.path.isdir(path), f"Path: {path} does not exist"
+        self.author = get_author(self.repo)
         self.path = path
         try:
             self.repo = Repo(path, search_parent_directories=True)
@@ -30,8 +31,6 @@ class E2xRepo:
                 self.create_gitignore()
             else:
                 raise InvalidGitRepositoryError(f"{path} is not a valid repository")
-
-        self.author = get_author(self.repo)
 
     def get_path(self, path: str) -> str:
         """Get the path relative to the repo root
