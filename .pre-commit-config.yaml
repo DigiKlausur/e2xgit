@@ -10,3 +10,8 @@ repos:
       - id: isort
         files: \.py$
         args: [--profile=black]
+
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
