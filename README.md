@@ -15,11 +15,11 @@ pip install .
 Add the following lines to your `jupyter_notebook_config.py`:
 
 ```
-from e2xgit import configure_post_save_hook
+from e2xgit import configure_e2xgit
 
 c = get_config()
 
 ...
 
-configure_post_save_hook(c)
+configure_e2xgit(c)
 ```
