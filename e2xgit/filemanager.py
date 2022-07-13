@@ -1,21 +1,23 @@
 import importlib
 import os
 from enum import Enum
+from typing import Any, Dict, Literal, Union
 
+import traitlets
 from notebook.services.contents.filemanager import FileContentsManager
 from tornado import web
-from traitlets import Any, TraitError, validate
+from traitlets import TraitError, validate
 
 
 class FileOperations(Enum):
-    RENAME = 1
-    SAVE = 2
-    DELETE = 3
+    RENAME = "rename"
+    SAVE = "save"
+    DELETE = "delete"
 
 
 class E2xFileContentsManager(FileContentsManager):
 
-    post_file_op_hook = Any(
+    post_file_op_hook = traitlets.Any(
         None,
         config=True,
         allow_none=True,
@@ -27,6 +29,7 @@ class E2xFileContentsManager(FileContentsManager):
 
     @validate("post_file_op_hook")
     def _validate_post_file_op_hook(self, proposal):
+        """Make sure the post file op hook is given as an import string or a callable"""
         value = proposal["value"]
         if isinstance(value, str):
             module, function = value.rsplit(".", 1)
@@ -35,15 +38,17 @@ class E2xFileContentsManager(FileContentsManager):
             raise TraitError("post_file_op_hook must be callable")
         return value
 
-    def run_post_file_op_hook(self, action, options):
+    def run_post_file_op_hook(
+        self,
+        action: Literal[
+            FileOperations.DELETE, FileOperations.RENAME, FileOperations.SAVE
+        ],
+        options: Dict[str, Any],
+    ) -> None:
         """Run the post file op hook if defined, and log errors"""
-        self.log.info(f"About to run hook with action={action}, options={options}")
         if self.post_file_op_hook:
             try:
                 self.log.debug("Running post file op hook")
-                self.log.info(
-                    f"About to really run hook with action={action}, options={options}"
-                )
                 self.post_file_op_hook(action=action, options=options)
             except Exception as e:
                 self.log.error("Post file op hook failed", exc_info=True)
@@ -51,8 +56,7 @@ class E2xFileContentsManager(FileContentsManager):
                     500, f"Unexpected error while running post file op hook: {e}"
                 ) from e
 
-    def rename_file(self, old_path, new_path):
-        self.log.info(f"Rename {old_path} -> {new_path}")
+    def rename_file(self, old_path: str, new_path: str):
         res = super().rename_file(old_path, new_path)
         self.run_post_file_op_hook(
             action=FileOperations.RENAME,
@@ -63,8 +67,7 @@ class E2xFileContentsManager(FileContentsManager):
         )
         return res
 
-    def delete_file(self, path):
-        self.log.info(f"Delete {path}")
+    def delete_file(self, path: str):
         res = super().delete_file(path)
         self.run_post_file_op_hook(
             action=FileOperations.DELETE,
@@ -72,8 +75,7 @@ class E2xFileContentsManager(FileContentsManager):
         )
         return res
 
-    def save(self, model, path=""):
-        self.log.info(f"Save {path}")
+    def save(self, model: Dict[str, Any], path: str = ""):
         res = super().save(model, path)
         self.run_post_file_op_hook(
             action=FileOperations.SAVE,
