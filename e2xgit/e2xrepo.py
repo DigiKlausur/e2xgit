@@ -21,13 +21,15 @@ class E2xRepo:
             and create_if_not_exists is set to False
         """
         assert os.path.isdir(path), f"Path: {path} does not exist"
-        self.author = get_author(self.repo)
+
         self.path = path
         try:
             self.repo = Repo(path, search_parent_directories=True)
+            self.author = get_author(self.repo)
         except InvalidGitRepositoryError:
             if create_if_not_exists:
                 self.repo = Repo.init(path)
+                self.author = get_author(self.repo)
                 self.create_gitignore()
             else:
                 raise InvalidGitRepositoryError(f"{path} is not a valid repository")
